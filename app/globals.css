@@ -25,20 +25,25 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #d1d1d1;
-  border-radius: 10px;
+#playlist li:first-child {
+  max-height: 0;
+  opacity: 0;
+  animation: grow 1s ease-in-out forwards;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #b1b1b1;
+@keyframes grow {
+  to {
+    max-height: 100px;
+    opacity: 1;
+  }
 }
