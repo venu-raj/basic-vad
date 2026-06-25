@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         let model;
         try {
             model = genAI.getGenerativeModel({
-                model: "gemini-3.5-flash"
+                model: "gemini-2.5-flash"
             });
             console.log('Gemini model initialized');
         } catch (error) {
