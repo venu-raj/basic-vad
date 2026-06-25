@@ -22,7 +22,7 @@ function StartDemoButton({ startDemo }: { startDemo: () => void }) {
     <div className="flex justify-center">
       <button
         onClick={startDemo}
-        className="text-xl text-black bg-lime-400 font-bold px-3 py-2 rounded hover:bg-black hover:text-white transition-colors"
+        className="text-xl text-black bg-lime-400 font-bold px-6 py-3 rounded-lg hover:bg-black hover:text-white transition-all duration-300 shadow-md hover:shadow-lg"
       >
         Start demo
       </button>
@@ -93,11 +93,9 @@ function ActiveDemo() {
         body: formData,
       });
 
-      // Get the response data
       const data = await response.json();
 
       if (!response.ok) {
-        // Throw with the specific error message from the API
         throw new Error(data.error || data.details || `HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -115,7 +113,7 @@ function ActiveDemo() {
       });
     } catch (error) {
       console.error("Gemini Processing Error:", error);
-      throw error; // Re-throw to be caught by onSpeechEnd
+      throw error;
     }
   };
 
@@ -128,101 +126,157 @@ function ActiveDemo() {
   }
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="w-48 flex items-center">
-        <div className="w-24 flex justify-center items-center">
+    <div className="flex flex-col items-center space-y-6">
+      {/* Controls Section */}
+      <div className="flex items-center justify-center space-x-6 bg-white/50 backdrop-blur-sm rounded-2xl px-8 py-4 shadow-sm border border-gray-100">
+        <div className="flex items-center space-x-3">
           {vad.listening && vad.userSpeaking && <HighEnergyCube />}
           {vad.listening && !vad.userSpeaking && <LowEnergyCube />}
           {!vad.listening && <DeactivatedCube />}
+          <span className="text-sm font-medium text-gray-600 ml-1">
+            {vad.listening ? (vad.userSpeaking ? 'Speaking...' : 'Listening...') : 'Paused'}
+          </span>
         </div>
-        <div className="w-24 flex justify-start items-center">
-          <div
-            className="underline underline-offset-2 text-black grow cursor-pointer"
-            onClick={vad.toggle}
-          >
-            {vad.listening && "Pause"}
-            {!vad.listening && "Start"}
-          </div>
-        </div>
+
+        <div className="h-8 w-px bg-gray-200" />
+
+        <button
+          onClick={vad.toggle}
+          className={`px-5 py-2 rounded-lg font-semibold transition-all duration-300 ${vad.listening
+            ? 'bg-red-50 text-red-600 hover:bg-red-100'
+            : 'bg-lime-50 text-lime-600 hover:bg-lime-100'
+            }`}
+        >
+          {vad.listening ? 'Pause' : 'Start Recording'}
+        </button>
       </div>
 
-      <ol
-        id="playlist"
-        className="self-center pl-0 max-h-[400px] overflow-y-auto no-scrollbar list-none w-full max-w-md space-y-4"
-      >
-        {audioList.map((item, index) => (
-          <li className="pl-0 bg-gray-50 rounded-lg p-3" key={index}>
-            <audio src={item.url} controls className="w-full" />
+      {/* Audio List */}
+      <div className="w-full max-w-2xl">
+        <div className="flex items-center justify-between mb-4 px-2">
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            Recordings ({audioList.length})
+          </h3>
+          {audioList.length > 0 && (
+            <button
+              onClick={() => setAudioList([])}
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
 
-            {item.isLoading && (
-              <div className="mt-2 text-sm text-gray-500 flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
-                Processing with Gemini AI...
-              </div>
-            )}
+        <ol className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+          {audioList.length === 0 && (
+            <li className="text-center py-12 text-gray-400 text-sm">
+              <div className="text-4xl mb-3">🎤</div>
+              <p>No recordings yet</p>
+              <p className="text-xs mt-1">Start speaking to see results here</p>
+            </li>
+          )}
 
-            {item.error && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                <div className="text-sm font-medium text-red-800">Error:</div>
-                <div className="text-sm text-red-600 break-words">{item.error}</div>
+          {audioList.map((item, index) => (
+            <li
+              key={index}
+              className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
+            >
+              {/* Audio Player */}
+              <div className="mb-3">
+                <audio src={item.url} controls className="w-full h-10" />
               </div>
-            )}
 
-            {item.transcript && !item.isLoading && (
-              <div className="mt-2">
-                <div className="text-sm font-medium text-gray-700">Transcript:</div>
-                <div className="text-sm text-gray-600 italic">"{item.transcript}"</div>
-              </div>
-            )}
+              {/* Content */}
+              <div className="space-y-3">
+                {item.isLoading && (
+                  <div className="flex items-center gap-3 text-sm text-gray-500 bg-gray-50 rounded-lg p-3">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-lime-500 border-t-transparent"></div>
+                    <span>Processing with Gemini AI...</span>
+                  </div>
+                )}
 
-            {item.keywords && item.keywords.length > 0 && !item.isLoading && (
-              <div className="mt-2">
-                <div className="text-sm font-medium text-gray-700">Keywords:</div>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {item.keywords.map((keyword, i) => (
-                    <span
-                      key={i}
-                      className="px-2 py-1 bg-lime-100 text-lime-800 rounded-full text-xs font-medium"
-                    >
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
+                {item.error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <span className="text-red-500 text-sm">⚠️</span>
+                      <div>
+                        <div className="text-sm font-medium text-red-800">Error</div>
+                        <div className="text-sm text-red-600 break-words">{item.error}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {item.transcript && !item.isLoading && (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Transcript</span>
+                      <span className="text-[10px] text-gray-400">—</span>
+                      <span className="text-[10px] text-gray-400">{item.transcript.length} chars</span>
+                    </div>
+                    <div className="text-sm text-gray-700 leading-relaxed">
+                      "{item.transcript}"
+                    </div>
+                  </div>
+                )}
+
+                {item.keywords && item.keywords.length > 0 && !item.isLoading && (
+                  <div className="bg-lime-50/50 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Keywords</span>
+                      <span className="text-[10px] text-gray-400">—</span>
+                      <span className="text-[10px] text-gray-400">{item.keywords.length} found</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {item.keywords.map((keyword, i) => (
+                        <span
+                          key={i}
+                          className="px-3 py-1 bg-lime-200 text-lime-800 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          #{keyword}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </li>
-        ))}
-      </ol>
+            </li>
+          ))}
+        </ol>
+      </div>
     </div>
   );
 }
 
 function Loading() {
   return (
-    <div className="flex justify-center">
-      <div className="animate-pulse text-2xl text-black">Loading</div>
+    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-lime-400 border-t-transparent" />
+      <div className="text-sm font-medium text-gray-500">Loading voice detection...</div>
     </div>
   );
 }
 
 function Errored() {
   return (
-    <div className="flex justify-center">
-      <div className="text-2xl text-black">Something went wrong</div>
+    <div className="flex flex-col items-center justify-center py-12 space-y-3">
+      <div className="text-4xl">😅</div>
+      <div className="text-lg font-medium text-gray-700">Something went wrong</div>
+      <div className="text-sm text-gray-400">Please refresh and try again</div>
     </div>
   );
 }
 
 const DeactivatedCube = () => {
   return (
-    <div className="bg-gradient-to-l from-[#2A2A2A] to-[#474747] h-10 w-10 rounded-[6px]" />
+    <div className="bg-gradient-to-l from-[#2A2A2A] to-[#474747] h-10 w-10 rounded-lg shadow-inner" />
   );
 };
 
 const LowEnergyCube = () => {
   return (
     <motion.div
-      className="bg-gradient-to-l from-[#7928CA] to-[#008080] h-10 w-10 rounded-[6px]"
+      className="bg-gradient-to-l from-[#7928CA] to-[#008080] h-10 w-10 rounded-lg shadow-lg"
       animate={{ rotate: 360 }}
       transition={{
         duration: 2.5,
@@ -236,7 +290,7 @@ const LowEnergyCube = () => {
 const HighEnergyCube = () => {
   return (
     <motion.div
-      className="bg-gradient-to-l from-[#7928CA] to-[#FF0080] h-10 w-10 rounded-[6px]"
+      className="bg-gradient-to-l from-[#7928CA] to-[#FF0080] h-10 w-10 rounded-lg shadow-lg"
       animate={{ rotate: 360 }}
       transition={{
         duration: 0.6,
@@ -246,6 +300,7 @@ const HighEnergyCube = () => {
     />
   );
 };
+
 
 // "use client";
 
