@@ -72,19 +72,22 @@ function ActiveDemo() {
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  const vad = useMicVAD({
-    startOnLoad: true,
+    const vad = useMicVAD({
+    model: "v5",
+    baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/",
+    onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/",
+    positiveSpeechThreshold: 0.4,
+    negativeSpeechThreshold: 0.4,
+    startOnLoad: false,
     onSpeechEnd: (audio) => {
-      try {
-        const wavBuffer = utils.encodeWAV(audio);
-        const base64 = utils.arrayBufferToBase64(wavBuffer);
-        const url = `data:audio/wav;base64,${base64}`;
-        setAudioList((old) => [url, ...old]);
-      } catch (err) {
-        console.error("Error processing audio:", err);
-      }
+      const wavBuffer = utils.encodeWAV(audio);
+      const base64 = utils.arrayBufferToBase64(wavBuffer);
+      const url = `data:audio/wav;base64,${base64}`;
+      setAudioList((old) => [url, ...old]);
     },
   });
+
+
 
   useEffect(() => {
     // Check if microphone is available
