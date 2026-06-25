@@ -104,7 +104,7 @@ export const Demo = () => {
   return (
     <div 
       ref={containerRef}
-      className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 md:p-8 bg-white"
+      className="min-h-screen w-full p-4 sm:p-6 md:p-8 bg-white"
     >
       <div className="w-full max-w-6xl mx-auto">
         {/* Header */}
@@ -112,11 +112,10 @@ export const Demo = () => {
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black tracking-tight">
             Voice Activity Detector
           </h1>
-          {/* <div/> */}
         </div>
 
-        {/* Main Card */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+        {/* Main Content - Removed card/border styling */}
+        <div className="space-y-6">
           {/* Status Bar */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div 
@@ -151,9 +150,9 @@ export const Demo = () => {
                 <button
                   onClick={handleToggle}
                   disabled={isLoading || vad.loading}
-                  className="flex-1 sm:flex-none px-8 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white rounded-xl transition-all duration-300 font-medium"
+                  className="flex-1 sm:flex-none px-8 py-3 bg-black hover:bg-gray-800 disabled:bg-gray-300 text-white rounded-xl transition-all duration-300 font-medium"
                 >
-                  {vad.listening ? '⏹️ Stop' : '▶️ Resume'}
+                  {vad.listening ? '⏸️ Pause' : '▶️ Resume'}
                 </button>
               )}
               
@@ -168,12 +167,12 @@ export const Demo = () => {
             </div>
           </div>
 
-          {/* Status Grid */}
+          {/* Status Grid - Fixed status logic */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
               <h6 className="text-xs uppercase tracking-wider text-gray-500 mb-2">Status</h6>
-              <span className={`text-lg font-semibold ${vad.listening ? "text-green-600" : "text-red-600"}`}>
-                {vad.listening ? "✅ Active" : "❌ Inactive"}
+              <span className={`text-lg font-semibold ${vad.listening ? "text-green-600" : isInitialized ? "text-yellow-600" : "text-red-600"}`}>
+                {vad.listening ? "✅ Active" : isInitialized ? "⏸️ Paused" : "⏹️ Stopped"}
               </span>
             </div>
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -197,14 +196,14 @@ export const Demo = () => {
             </div>
           </div>
 
-          {/* Audio Playlist */}
+          {/* Audio Playlist - Removed separate scrolling, now natural flow */}
           {audioList.length > 0 && (
             <div className="mt-6">
               <h6 className="font-semibold mb-4 text-black text-lg flex items-center gap-2">
                 <span>📼 Recorded Speech</span>
                 <span className="text-sm text-gray-500 font-normal">({audioList.length} clips)</span>
               </h6>
-              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-3">
                 {audioList.map((url, index) => (
                   <div 
                     key={index} 
