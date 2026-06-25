@@ -47,6 +47,7 @@ function ActiveDemo() {
   }
 
   if (vad.errored) {
+    console.log("Error:", vad.errored);
     return <Errored />;
   }
 
