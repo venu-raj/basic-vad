@@ -73,7 +73,7 @@ function ActiveDemo() {
             updated[0] = {
               ...updated[0],
               isLoading: false,
-              error: error instanceof Error ? error.message : 'Failed to process audio',
+              error: error instanceof Error ? error.message : 'Unknown error occurred',
             };
           }
           return updated;
@@ -93,11 +93,13 @@ function ActiveDemo() {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to process speech');
-      }
-
+      // Get the response data
       const data = await response.json();
+
+      if (!response.ok) {
+        // Throw with the specific error message from the API
+        throw new Error(data.error || data.details || `HTTP ${response.status}: ${response.statusText}`);
+      }
 
       setAudioList((old) => {
         const updated = [...old];
@@ -113,7 +115,7 @@ function ActiveDemo() {
       });
     } catch (error) {
       console.error("Gemini Processing Error:", error);
-      throw error;
+      throw error; // Re-throw to be caught by onSpeechEnd
     }
   };
 
@@ -160,8 +162,9 @@ function ActiveDemo() {
             )}
 
             {item.error && (
-              <div className="mt-2 text-sm text-red-600">
-                Error: {item.error}
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                <div className="text-sm font-medium text-red-800">Error:</div>
+                <div className="text-sm text-red-600 break-words">{item.error}</div>
               </div>
             )}
 
