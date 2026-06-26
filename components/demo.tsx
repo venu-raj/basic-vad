@@ -1,153 +1,10 @@
-
-
-
-// "use client";
-
-// import { useMicVAD, utils } from "@ricky0123/vad-react";
-// import { useState } from "react";
-// import { motion } from "framer-motion";
-
-// export default function Demo() {
-//   const [demoStarted, setDemoStarted] = useState(false);
-
-//   return (
-//     <div className="pb-2">
-//       {!demoStarted && (
-//         <StartDemoButton startDemo={() => setDemoStarted(true)} />
-//       )}
-//       {demoStarted && <ActiveDemo />}
-//     </div>
-//   );
-// }
-
-// function StartDemoButton({ startDemo }: { startDemo: () => void }) {
-//   return (
-//     <div className="flex justify-center">
-//       <button
-//         onClick={startDemo}
-//         className="text-xl text-black bg-lime-400 font-bold px-3 py-2 rounded hover:bg-black hover:text-white transition-colors"
-//       >
-//         Start demo
-//       </button>
-//     </div>
-//   );
-// }
-
-// function ActiveDemo() {
-//   const [audioList, setAudioList] = useState<string[]>([]);
-
-//   const vad = useMicVAD({
-//     model: "v5",
-//     baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/",
-//     onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/",
-//     positiveSpeechThreshold: 0.4,
-//     negativeSpeechThreshold: 0.4,
-//     startOnLoad: false,
-//     onSpeechEnd: (audio) => {
-//       const wavBuffer = utils.encodeWAV(audio);
-//       const base64 = utils.arrayBufferToBase64(wavBuffer);
-//       const url = `data:audio/wav;base64,${base64}`;
-//       setAudioList((old) => [url, ...old]);
-//     },
-//   });
-
-//   if (vad.loading) {
-//     return <Loading />;
-//   }
-
-//   if (vad.errored) {
-//     console.log("Error:", vad.errored);
-//     return <Errored />;
-//   }
-
-//   return (
-//     <div className="flex flex-col items-center">
-//       <div className="w-48 flex items-center">
-//         <div className="w-24 flex justify-center items-center">
-//           {vad.listening && vad.userSpeaking && <HighEnergyCube />}
-//           {vad.listening && !vad.userSpeaking && <LowEnergyCube />}
-//           {!vad.listening && <DeactivatedCube />}
-//         </div>
-//         <div className="w-24 flex justify-start items-center">
-//           <div
-//             className="underline underline-offset-2 text-black grow cursor-pointer"
-//             onClick={vad.toggle}
-//           >
-//             {vad.listening && "Pause"}
-//             {!vad.listening && "Start"}
-//           </div>
-//         </div>
-//       </div>
-//       <ol
-//         id="playlist"
-//         className="self-center pl-0 max-h-[400px] overflow-y-auto no-scrollbar list-none w-full max-w-md"
-//       >
-//         {audioList.map((audioURL, index) => (
-//           <li className="pl-0" key={index}>
-//             <audio src={audioURL} controls className="w-full" />
-//           </li>
-//         ))}
-//       </ol>
-//     </div>
-//   );
-// }
-
-// function Loading() {
-//   return (
-//     <div className="flex justify-center">
-//       <div className="animate-pulse text-2xl text-black">Loading</div>
-//     </div>
-//   );
-// }
-
-// function Errored() {
-//   return (
-//     <div className="flex justify-center">
-//       <div className="text-2xl text-black">Something went wrong</div>
-//     </div>
-//   );
-// }
-
-// const DeactivatedCube = () => {
-//   return (
-//     <div className="bg-gradient-to-l from-[#2A2A2A] to-[#474747] h-10 w-10 rounded-[6px]" />
-//   );
-// };
-
-// const LowEnergyCube = () => {
-//   return (
-//     <motion.div
-//       className="bg-gradient-to-l from-[#7928CA] to-[#008080] h-10 w-10 rounded-[6px]"
-//       animate={{ rotate: 360 }}
-//       transition={{
-//         duration: 2.5,
-//         repeat: Infinity,
-//         ease: "linear",
-//       }}
-//     />
-//   );
-// };
-
-// const HighEnergyCube = () => {
-//   return (
-//     <motion.div
-//       className="bg-gradient-to-l from-[#7928CA] to-[#FF0080] h-10 w-10 rounded-[6px]"
-//       animate={{ rotate: 360 }}
-//       transition={{
-//         duration: 0.6,
-//         repeat: Infinity,
-//         ease: "linear",
-//       }}
-//     />
-//   );
-// };
-
-
 "use client";
 
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+
+// Got example from ricky0123/vad-react docs, but modified it to work with Gemini AI for speech-to-text and keyword extraction.
 
 export default function Demo() {
   const [demoStarted, setDemoStarted] = useState(false);
@@ -208,7 +65,6 @@ function ActiveDemo() {
 
         setAudioList((old) => [newItem, ...old]);
 
-        // Process with Google Gemini
         await processAudioWithGemini(wavBuffer);
       } catch (error) {
         console.error("Error processing audio:", error);
@@ -272,7 +128,6 @@ function ActiveDemo() {
 
   return (
     <div className="flex flex-col items-center space-y-6">
-      {/* Controls Section */}
       <div className="flex items-center justify-center space-x-6 bg-white/50 backdrop-blur-sm rounded-2xl px-8 py-4 shadow-sm border border-gray-100">
         <div className="flex items-center space-x-3">
           {vad.listening && vad.userSpeaking && <HighEnergyCube />}
@@ -296,7 +151,6 @@ function ActiveDemo() {
         </button>
       </div>
 
-      {/* Audio List */}
       <div className="w-full max-w-2xl">
         <div className="flex items-center justify-between mb-4 px-2">
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
@@ -326,12 +180,10 @@ function ActiveDemo() {
               key={index}
               className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
             >
-              {/* Audio Player */}
               <div className="mb-3">
                 <audio src={item.url} controls className="w-full h-10" />
               </div>
 
-              {/* Content */}
               <div className="space-y-3">
                 {item.isLoading && (
                   <div className="flex items-center gap-3 text-sm text-gray-500 bg-gray-50 rounded-lg p-3">
